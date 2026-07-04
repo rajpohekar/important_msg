@@ -4,6 +4,7 @@ import BackgroundBlobs from "./components/BackgroundBlobs";
 import BottomNavigation from "./components/BottomNavigation";
 import Header from "./components/Header";
 import LoadingScreen from "./components/LoadingScreen";
+import SecurityGate from "./components/SecurityGate";
 import Toast from "./components/Toast";
 import { useLocalStorage } from "./hooks/useLocalStorage";
 
@@ -68,27 +69,31 @@ const App = () => {
       <BackgroundBlobs />
       <div ref={cursorGlow} className="cursor-glow" aria-hidden="true" />
       <LoadingScreen show={loading} />
-      <div className="relative min-h-[100dvh] overflow-x-hidden">
-        <Header page={page} setPage={setPage} />
-        <main className="px-4 pb-[calc(7rem+env(safe-area-inset-bottom))] pt-2 xs:px-5 md:px-6 md:pb-14 md:pt-0">
-          <Suspense fallback={<PageFallback />}>
-            <AnimatePresence mode="wait">
-              {page === "home" ? (
-                <Home key="home" moments={moments} onAddMoment={addMoment} showToast={showToast} />
-              ) : (
-                <Insights
-                  key="insights"
-                  moments={moments}
-                  onClearMoments={clearMoments}
-                  showToast={showToast}
-                />
-              )}
-            </AnimatePresence>
-          </Suspense>
-        </main>
-        <BottomNavigation page={page} setPage={setPage} />
-        <Toast toasts={toasts} />
-      </div>
+      <SecurityGate showToast={showToast}>
+        {({ lockApp }) => (
+          <div className="relative min-h-[100dvh] overflow-x-hidden">
+            <Header page={page} setPage={setPage} onLock={lockApp} />
+            <main className="px-4 pb-[calc(7rem+env(safe-area-inset-bottom))] pt-2 xs:px-5 md:px-6 md:pb-14 md:pt-0">
+              <Suspense fallback={<PageFallback />}>
+                <AnimatePresence mode="wait">
+                  {page === "home" ? (
+                    <Home key="home" moments={moments} onAddMoment={addMoment} showToast={showToast} />
+                  ) : (
+                    <Insights
+                      key="insights"
+                      moments={moments}
+                      onClearMoments={clearMoments}
+                      showToast={showToast}
+                    />
+                  )}
+                </AnimatePresence>
+              </Suspense>
+            </main>
+            <BottomNavigation page={page} setPage={setPage} />
+          </div>
+        )}
+      </SecurityGate>
+      <Toast toasts={toasts} />
     </>
   );
 };

@@ -1,5 +1,5 @@
 import { Canvas } from "@react-three/fiber";
-import { Environment, Float, Sparkles } from "@react-three/drei";
+import { Float, Sparkles } from "@react-three/drei";
 import { Suspense, useEffect, useRef, useState } from "react";
 import { motion, useReducedMotion } from "framer-motion";
 import HeartModel from "./HeartModel";
@@ -83,8 +83,6 @@ const SceneContents = ({ mobile, reducedMotion, parallax }) => (
       <circleGeometry args={[0.82, 42]} />
       <meshBasicMaterial color="#F58FB1" transparent opacity={0.13} />
     </mesh>
-
-    <Environment preset="sunset" />
   </>
 );
 

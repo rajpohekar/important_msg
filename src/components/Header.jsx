@@ -1,4 +1,4 @@
-import { BarChart3, Heart, Home, Music2, VolumeX } from "lucide-react";
+import { BarChart3, Heart, Home, LockKeyhole, Music2, VolumeX } from "lucide-react";
 import { motion } from "framer-motion";
 import { useState } from "react";
 
@@ -7,7 +7,7 @@ const tabs = [
   { id: "insights", label: "Insights", icon: BarChart3 },
 ];
 
-const Header = ({ page, setPage }) => {
+const Header = ({ page, setPage, onLock }) => {
   const [musicOn, setMusicOn] = useState(false);
   const MusicIcon = musicOn ? Music2 : VolumeX;
 
@@ -58,17 +58,29 @@ const Header = ({ page, setPage }) => {
           })}
         </nav>
 
-        <button
-          type="button"
-          onClick={() => setMusicOn((value) => !value)}
-          className="flex min-h-11 min-w-11 items-center justify-center gap-2 rounded-full border border-white/70 bg-white/62 px-3 text-sm font-bold text-cocoa-600 shadow-soft backdrop-blur-xl transition hover:-translate-y-0.5 hover:text-cocoa-700 focus:outline-none focus-visible:ring-2 focus-visible:ring-blush-400 md:px-4"
-          aria-pressed={musicOn}
-          aria-label="Toggle soft background music visual"
-          title="Soft background music toggle"
-        >
-          <MusicIcon size={17} aria-hidden="true" />
-          <span className="hidden md:inline">{musicOn ? "Soft hum" : "Quiet"}</span>
-        </button>
+        <div className="flex items-center gap-2">
+          <button
+            type="button"
+            onClick={() => onLock?.()}
+            className="flex min-h-11 min-w-11 items-center justify-center gap-2 rounded-full border border-white/70 bg-white/62 px-3 text-sm font-bold text-cocoa-600 shadow-soft backdrop-blur-xl transition hover:-translate-y-0.5 hover:text-cocoa-700 focus:outline-none focus-visible:ring-2 focus-visible:ring-blush-400 lg:px-4"
+            aria-label="Lock Little Miss Counter"
+            title="Lock app"
+          >
+            <LockKeyhole size={17} aria-hidden="true" />
+            <span className="hidden lg:inline">Lock</span>
+          </button>
+          <button
+            type="button"
+            onClick={() => setMusicOn((value) => !value)}
+            className="flex min-h-11 min-w-11 items-center justify-center gap-2 rounded-full border border-white/70 bg-white/62 px-3 text-sm font-bold text-cocoa-600 shadow-soft backdrop-blur-xl transition hover:-translate-y-0.5 hover:text-cocoa-700 focus:outline-none focus-visible:ring-2 focus-visible:ring-blush-400 md:px-4"
+            aria-pressed={musicOn}
+            aria-label="Toggle soft background music visual"
+            title="Soft background music toggle"
+          >
+            <MusicIcon size={17} aria-hidden="true" />
+            <span className="hidden md:inline">{musicOn ? "Soft hum" : "Quiet"}</span>
+          </button>
+        </div>
       </div>
     </header>
   );
