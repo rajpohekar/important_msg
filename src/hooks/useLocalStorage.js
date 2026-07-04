@@ -1,12 +1,11 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import {
-  isFirebaseSyncConfigured,
-  pushMomentToCloud,
+  isSupabaseSyncConfigured,
   replaceMomentsInCloud,
   savePhotoToCloud,
   seedSharedState,
   subscribeToSharedState,
-} from "../utils/firebaseSync";
+} from "../utils/supabaseSync";
 import {
   clearMoments,
   createMoment,
@@ -23,7 +22,7 @@ export const useLocalStorage = () => {
   const [moments, setMoments] = useState(() => getMoments());
   const [photo, setPhoto] = useState(() => getPhoto());
   const [syncStatus, setSyncStatus] = useState(() =>
-    isFirebaseSyncConfigured() ? "connecting" : "local",
+    isSupabaseSyncConfigured() ? "connecting" : "local",
   );
   const initialSeedAttempted = useRef(false);
 
@@ -34,8 +33,8 @@ export const useLocalStorage = () => {
     storeMoments(nextMoments);
     setMoments(nextMoments);
 
-    if (isFirebaseSyncConfigured()) {
-      pushMomentToCloud(moment)
+    if (isSupabaseSyncConfigured()) {
+      replaceMomentsInCloud(nextMoments)
         .then(() => setSyncStatus("synced"))
         .catch(() => setSyncStatus("offline"));
     }
@@ -47,7 +46,7 @@ export const useLocalStorage = () => {
     clearMoments();
     setMoments([]);
 
-    if (isFirebaseSyncConfigured()) {
+    if (isSupabaseSyncConfigured()) {
       replaceMomentsInCloud([])
         .then(() => setSyncStatus("synced"))
         .catch(() => setSyncStatus("offline"));
@@ -58,7 +57,7 @@ export const useLocalStorage = () => {
     savePhoto(nextPhoto);
     setPhoto(nextPhoto || "");
 
-    if (isFirebaseSyncConfigured()) {
+    if (isSupabaseSyncConfigured()) {
       savePhotoToCloud(nextPhoto || "")
         .then(() => setSyncStatus("synced"))
         .catch(() => setSyncStatus("offline"));
@@ -70,7 +69,7 @@ export const useLocalStorage = () => {
   }, [updatePhoto]);
 
   useEffect(() => {
-    if (!isFirebaseSyncConfigured()) return undefined;
+    if (!isSupabaseSyncConfigured()) return undefined;
 
     setSyncStatus("connecting");
 

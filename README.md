@@ -11,7 +11,7 @@ A polished, private, local-first React mini app for saving the little moments wh
 - Recharts
 - Lucide React
 - date-fns
-- Firebase Firestore realtime sync
+- Supabase realtime sync
 - localStorage persistence
 
 ## Local Development
@@ -55,46 +55,50 @@ Recommended Render settings if configuring manually:
 
 ## Quick Phone-To-Phone Sync
 
-This app supports Firebase Firestore realtime sync. Without Firebase env vars, it safely falls back to local-only storage.
+This app supports Supabase realtime sync. Without Supabase env vars, it safely falls back to local-only storage.
 
-1. Create a Firebase project on the free Spark plan.
-2. Enable Firestore Database.
-3. Add a Web app in Firebase project settings.
-4. Add these env vars to Vercel or Render:
+1. Create/open a Supabase project.
+2. Run this SQL in Supabase SQL Editor:
+
+```sql
+create table if not exists public.little_miss_counter (
+  id text primary key,
+  moments jsonb not null default '[]'::jsonb,
+  photo text not null default '',
+  updated_at timestamptz not null default now()
+);
+
+alter table public.little_miss_counter enable row level security;
+
+create policy "couple read"
+on public.little_miss_counter for select
+using (id = 'raj-swamini');
+
+create policy "couple insert"
+on public.little_miss_counter for insert
+with check (id = 'raj-swamini');
+
+create policy "couple update"
+on public.little_miss_counter for update
+using (id = 'raj-swamini')
+with check (id = 'raj-swamini');
+
+alter publication supabase_realtime add table public.little_miss_counter;
+```
+
+3. Add these env vars to Supabase/Vercel/Render:
 
 ```bash
-VITE_FIREBASE_API_KEY=...
-VITE_FIREBASE_AUTH_DOMAIN=...
-VITE_FIREBASE_PROJECT_ID=...
-VITE_FIREBASE_APP_ID=...
+VITE_SUPABASE_URL=...
+VITE_SUPABASE_ANON_KEY=...
 VITE_COUPLE_ID=raj-swamini
 ```
-
-5. Use these quick Firestore rules for the shared couple document:
-
-```js
-rules_version = '2';
-
-service cloud.firestore {
-  match /databases/{database}/documents {
-    match /littleMissCounter/raj-swamini {
-      allow read, write: if true;
-    }
-
-    match /{document=**} {
-      allow read, write: if false;
-    }
-  }
-}
-```
-
-For a stronger production lock, replace these quick rules with Firebase Auth/App Check later.
 
 ## Notes
 
 - The app stores all moments locally in the browser under `little-miss-counter-moments`.
 - The optional photo section stores one uploaded image locally under `little-miss-counter-us-photo`.
-- When Firebase env vars are present, moments and the photo section sync through one Firestore document.
+- When Supabase env vars are present, moments and the photo section sync through one shared Supabase row.
 - The private lock uses a fixed local passcode check and stores only the current unlock session in `sessionStorage`.
 - Vercel and Render configs include security headers for static deployment.
 - There is no backend, login, database, messaging, notifications, or tracking.
