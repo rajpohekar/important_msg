@@ -92,14 +92,22 @@ const UsPhotoSection = ({ photo, syncStatus, onSavePhoto, onClearPhoto, showToas
 
       <div className="relative grid gap-4 md:grid-cols-[minmax(260px,0.85fr)_1fr] md:items-center">
         <div className="relative overflow-hidden rounded-lg border border-white/80 bg-gradient-to-br from-blush-100 via-white to-lavender-200 p-2 shadow-glass">
-          <div className="relative aspect-[4/5] overflow-hidden rounded-lg bg-white/48">
+          <div className="relative aspect-[4/5] overflow-hidden rounded-lg bg-gradient-to-br from-white/72 via-blush-100/42 to-lavender-200/48">
             {photo ? (
-              <img
-                src={photo}
-                alt="A saved picture of us"
-                className="h-full w-full object-cover"
-                loading="lazy"
-              />
+              <>
+                <img
+                  src={photo}
+                  alt=""
+                  className="absolute inset-0 h-full w-full scale-110 object-cover opacity-20 blur-xl"
+                  aria-hidden="true"
+                />
+                <img
+                  src={photo}
+                  alt="A saved picture of us"
+                  className="relative z-10 h-full w-full object-contain p-2"
+                  loading="lazy"
+                />
+              </>
             ) : (
               <div className="grid h-full place-items-center px-6 text-center">
                 <div>
