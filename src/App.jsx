@@ -24,7 +24,7 @@ const App = () => {
   const [loading, setLoading] = useState(true);
   const [toasts, setToasts] = useState([]);
   const cursorGlow = useRef(null);
-  const { moments, addMoment, clearMoments } = useLocalStorage();
+  const { moments, photo, syncStatus, addMoment, clearMoments, savePhoto, clearPhoto } = useLocalStorage();
 
   useEffect(() => {
     const timer = window.setTimeout(() => setLoading(false), 360);
@@ -77,7 +77,16 @@ const App = () => {
               <Suspense fallback={<PageFallback />}>
                 <AnimatePresence mode="wait">
                   {page === "home" ? (
-                    <Home key="home" moments={moments} onAddMoment={addMoment} showToast={showToast} />
+                    <Home
+                      key="home"
+                      moments={moments}
+                      photo={photo}
+                      syncStatus={syncStatus}
+                      onAddMoment={addMoment}
+                      onSavePhoto={savePhoto}
+                      onClearPhoto={clearPhoto}
+                      showToast={showToast}
+                    />
                   ) : (
                     <Insights
                       key="insights"

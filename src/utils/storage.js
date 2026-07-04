@@ -1,6 +1,7 @@
 import { createDemoMoments } from "./demoData";
 
 export const STORAGE_KEY = "little-miss-counter-moments";
+export const PHOTO_STORAGE_KEY = "little-miss-counter-us-photo";
 
 const isMoment = (moment) =>
   moment &&
@@ -10,6 +11,22 @@ const isMoment = (moment) =>
 
 const sortMoments = (moments) =>
   [...moments].sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
+
+export const normalizeMoments = (moments) =>
+  Array.isArray(moments) ? sortMoments(moments.filter(isMoment)) : [];
+
+export const createMoment = () => ({
+  id:
+    typeof crypto !== "undefined" && crypto.randomUUID
+      ? crypto.randomUUID()
+      : `${Date.now()}-${Math.random().toString(16).slice(2)}`,
+  createdAt: new Date().toISOString(),
+});
+
+export const storeMoments = (moments) => {
+  if (typeof window === "undefined") return;
+  window.localStorage.setItem(STORAGE_KEY, JSON.stringify(normalizeMoments(moments)));
+};
 
 export const getMoments = () => {
   if (typeof window === "undefined") return [];
@@ -24,27 +41,34 @@ export const getMoments = () => {
 
   try {
     const parsed = JSON.parse(existing);
-    return Array.isArray(parsed) ? sortMoments(parsed.filter(isMoment)) : [];
+    return normalizeMoments(parsed);
   } catch {
     return [];
   }
 };
 
 export const saveMoment = () => {
-  const moment = {
-    id:
-      typeof crypto !== "undefined" && crypto.randomUUID
-        ? crypto.randomUUID()
-        : `${Date.now()}-${Math.random().toString(16).slice(2)}`,
-    createdAt: new Date().toISOString(),
-  };
+  const moment = createMoment();
 
-  const nextMoments = sortMoments([moment, ...getMoments()]);
-  window.localStorage.setItem(STORAGE_KEY, JSON.stringify(nextMoments));
+  storeMoments([moment, ...getMoments()]);
   return moment;
 };
 
 export const clearMoments = () => {
   if (typeof window === "undefined") return;
   window.localStorage.setItem(STORAGE_KEY, JSON.stringify([]));
+};
+
+export const getPhoto = () => {
+  if (typeof window === "undefined") return "";
+  return window.localStorage.getItem(PHOTO_STORAGE_KEY) || "";
+};
+
+export const savePhoto = (photo) => {
+  if (typeof window === "undefined") return;
+  if (photo) {
+    window.localStorage.setItem(PHOTO_STORAGE_KEY, photo);
+  } else {
+    window.localStorage.removeItem(PHOTO_STORAGE_KEY);
+  }
 };

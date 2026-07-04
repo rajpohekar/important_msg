@@ -1,10 +1,10 @@
 import { Camera, Heart, ImagePlus, Sparkles, X } from "lucide-react";
 import { motion, useReducedMotion } from "framer-motion";
-import { useEffect, useRef, useState } from "react";
+import { useRef, useState } from "react";
 
-const PHOTO_KEY = "little-miss-counter-us-photo";
-const MAX_IMAGE_SIZE = 1280;
-const IMAGE_QUALITY = 0.86;
+const MAX_IMAGE_SIZE = 900;
+const IMAGE_QUALITY = 0.72;
+const MAX_SYNCED_PHOTO_SIZE = 850000;
 
 const resizeImage = (file) =>
   new Promise((resolve, reject) => {
@@ -35,15 +35,10 @@ const resizeImage = (file) =>
     reader.readAsDataURL(file);
   });
 
-const UsPhotoSection = ({ showToast }) => {
-  const [photo, setPhoto] = useState("");
+const UsPhotoSection = ({ photo, syncStatus, onSavePhoto, onClearPhoto, showToast }) => {
   const [isLoading, setIsLoading] = useState(false);
   const inputRef = useRef(null);
   const reduceMotion = useReducedMotion();
-
-  useEffect(() => {
-    setPhoto(window.localStorage.getItem(PHOTO_KEY) || "");
-  }, []);
 
   const handlePhotoChange = async (event) => {
     const file = event.target.files?.[0];
@@ -60,9 +55,18 @@ const UsPhotoSection = ({ showToast }) => {
 
     try {
       const imageData = await resizeImage(file);
-      window.localStorage.setItem(PHOTO_KEY, imageData);
-      setPhoto(imageData);
-      showToast("Your little picture is saved privately 💗");
+
+      if (imageData.length > MAX_SYNCED_PHOTO_SIZE) {
+        showToast("Try a smaller photo so it can sync gently.");
+        return;
+      }
+
+      onSavePhoto(imageData);
+      showToast(
+        syncStatus === "synced"
+          ? "Your little picture is syncing to both phones 💗"
+          : "Your little picture is saved privately 💗",
+      );
     } catch {
       showToast("That photo could not be saved yet.");
     } finally {
@@ -71,9 +75,8 @@ const UsPhotoSection = ({ showToast }) => {
   };
 
   const clearPhoto = () => {
-    window.localStorage.removeItem(PHOTO_KEY);
-    setPhoto("");
-    showToast("The photo was removed from this device.");
+    onClearPhoto();
+    showToast(syncStatus === "synced" ? "The photo was removed from both phones." : "The photo was removed from this device.");
   };
 
   return (
@@ -105,7 +108,7 @@ const UsPhotoSection = ({ showToast }) => {
                   </div>
                   <p className="mt-4 text-lg font-black text-cocoa-700">Add a picture of us</p>
                   <p className="mt-2 text-sm font-semibold leading-relaxed text-cocoa-600/75">
-                    It stays quietly on this device.
+                    It can sync softly to both phones.
                   </p>
                 </div>
               </div>
@@ -131,7 +134,8 @@ const UsPhotoSection = ({ showToast }) => {
             miniiiii
           </p>
           <p className="mt-3 max-w-md text-sm font-semibold leading-relaxed text-cocoa-600/78 md:text-base">
-            A tiny place for one favorite picture of you two, kept private in this browser.
+            A tiny place for one favorite picture of you two.
+            {syncStatus === "synced" ? " Updates appear on both phones." : " Connect Firebase to sync it."}
           </p>
 
           <div className="mt-5 flex flex-col gap-3 xs:flex-row">

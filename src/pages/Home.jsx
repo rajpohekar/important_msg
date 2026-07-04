@@ -32,7 +32,7 @@ const toastMessages = [
   "Your heart remembered her again ✨",
 ];
 
-const Home = ({ moments, onAddMoment, showToast }) => {
+const Home = ({ moments, photo, syncStatus, onAddMoment, onSavePhoto, onClearPhoto, showToast }) => {
   const [particles, setParticles] = useState([]);
   const reduceMotion = useReducedMotion();
 
@@ -121,7 +121,13 @@ const Home = ({ moments, onAddMoment, showToast }) => {
       </section>
 
       <div className="mt-5 md:mt-6">
-        <UsPhotoSection showToast={showToast} />
+        <UsPhotoSection
+          photo={photo}
+          syncStatus={syncStatus}
+          onSavePhoto={onSavePhoto}
+          onClearPhoto={onClearPhoto}
+          showToast={showToast}
+        />
       </div>
 
       <div className="mt-5 md:mt-6">
@@ -130,7 +136,9 @@ const Home = ({ moments, onAddMoment, showToast }) => {
 
       <p className="mx-auto mt-5 flex w-fit items-center gap-2 rounded-full bg-white/45 px-4 py-2 text-center text-xs font-bold text-cocoa-600/72 shadow-soft backdrop-blur-xl">
         <ShieldCheck size={14} aria-hidden="true" />
-        Your little moments stay privately on this device. 🔒
+        {syncStatus === "synced"
+          ? "Your little moments are syncing between both phones. 🔒"
+          : "Your little moments stay privately on this device. 🔒"}
       </p>
     </motion.div>
   );
