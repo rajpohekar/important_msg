@@ -55,5 +55,6 @@ Recommended Render settings if configuring manually:
 ## Notes
 
 - The app stores all moments locally in the browser under `little-miss-counter-moments`.
+- The optional photo section stores one uploaded image locally under `little-miss-counter-us-photo`.
 - There is no backend, login, database, messaging, notifications, or tracking.
 - Demo data is loaded only on first use when no local data exists.

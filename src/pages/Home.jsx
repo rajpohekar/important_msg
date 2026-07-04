@@ -5,6 +5,7 @@ import CuteQuote from "../components/CuteQuote";
 import FloatingHeartParticles, { createHeartBurst } from "../components/FloatingHeartParticles";
 import MissHerButton from "../components/MissHerButton";
 import StatsCard from "../components/StatsCard";
+import UsPhotoSection from "../components/UsPhotoSection";
 import {
   getMonthlyCount,
   getTodayCount,
@@ -118,6 +119,10 @@ const Home = ({ moments, onAddMoment, showToast }) => {
           delay={0.16}
         />
       </section>
+
+      <div className="mt-5 md:mt-6">
+        <UsPhotoSection showToast={showToast} />
+      </div>
 
       <div className="mt-5 md:mt-6">
         <CuteQuote />
