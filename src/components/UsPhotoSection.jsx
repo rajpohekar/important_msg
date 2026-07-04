@@ -141,11 +141,6 @@ const UsPhotoSection = ({ photo, syncStatus, onSavePhoto, onClearPhoto, showToas
             <Heart size={17} fill="currentColor" aria-hidden="true" />
             miniiiii
           </p>
-          <p className="mt-3 max-w-md text-sm font-semibold leading-relaxed text-cocoa-600/78 md:text-base">
-            A tiny place for one favorite picture of you two.
-            {syncStatus === "synced" ? " Updates appear on both phones." : " Connect Supabase to sync it."}
-          </p>
-
           <div className="mt-5 flex flex-col gap-3 xs:flex-row">
             <input
               ref={inputRef}
