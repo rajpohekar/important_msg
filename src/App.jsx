@@ -24,7 +24,20 @@ const App = () => {
   const [loading, setLoading] = useState(true);
   const [toasts, setToasts] = useState([]);
   const cursorGlow = useRef(null);
-  const { moments, photo, syncStatus, addMoment, savePhoto, clearPhoto } = useLocalStorage();
+  const {
+    moments,
+    photo,
+    note,
+    reply,
+    countdown,
+    syncStatus,
+    addMoment,
+    savePhoto,
+    clearPhoto,
+    saveNote,
+    sendReply,
+    saveCountdown,
+  } = useLocalStorage();
 
   useEffect(() => {
     const timer = window.setTimeout(() => setLoading(false), 360);
@@ -81,10 +94,16 @@ const App = () => {
                       key="home"
                       moments={moments}
                       photo={photo}
+                      note={note}
+                      reply={reply}
+                      countdown={countdown}
                       syncStatus={syncStatus}
                       onAddMoment={addMoment}
                       onSavePhoto={savePhoto}
                       onClearPhoto={clearPhoto}
+                      onSaveNote={saveNote}
+                      onSendReply={sendReply}
+                      onSaveCountdown={saveCountdown}
                       showToast={showToast}
                     />
                   ) : (

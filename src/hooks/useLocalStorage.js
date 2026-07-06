@@ -2,17 +2,21 @@ import { useCallback, useEffect, useState } from "react";
 import {
   isSupabaseSyncConfigured,
   replaceMomentsInCloud,
-  savePhotoToCloud,
+  saveSharedStateToCloud,
   subscribeToSharedState,
 } from "../utils/supabaseSync";
 import {
+  COUNTDOWN_STORAGE_KEY,
   createMoment,
   getMoments,
-  getPhoto,
+  getSharedState,
   getStoredMoments,
+  NOTE_STORAGE_KEY,
   normalizeMoments,
+  normalizeSharedState,
   PHOTO_STORAGE_KEY,
-  savePhoto,
+  REPLY_STORAGE_KEY,
+  saveSharedState,
   storeMoments,
   STORAGE_KEY,
 } from "../utils/storage";
@@ -21,7 +25,7 @@ export const useLocalStorage = () => {
   const [moments, setMoments] = useState(() =>
     isSupabaseSyncConfigured() ? getStoredMoments() : getMoments(),
   );
-  const [photo, setPhoto] = useState(() => getPhoto());
+  const [sharedState, setSharedState] = useState(() => getSharedState());
   const [syncStatus, setSyncStatus] = useState(() =>
     isSupabaseSyncConfigured() ? "connecting" : "local",
   );
@@ -43,20 +47,49 @@ export const useLocalStorage = () => {
     return moment;
   }, [moments]);
 
-  const updatePhoto = useCallback((nextPhoto) => {
-    savePhoto(nextPhoto);
-    setPhoto(nextPhoto || "");
+  const persistSharedState = useCallback((nextSharedState) => {
+    const normalizedSharedState = saveSharedState(nextSharedState);
+    setSharedState(normalizedSharedState);
 
     if (isSupabaseSyncConfigured()) {
-      savePhotoToCloud(nextPhoto || "")
+      saveSharedStateToCloud(normalizedSharedState)
         .then(() => setSyncStatus("synced"))
         .catch(() => setSyncStatus("offline"));
     }
+
+    return normalizedSharedState;
   }, []);
+
+  const updatePhoto = useCallback(
+    (nextPhoto) => persistSharedState({ ...sharedState, photo: nextPhoto || "" }),
+    [persistSharedState, sharedState],
+  );
 
   const removePhoto = useCallback(() => {
     updatePhoto("");
   }, [updatePhoto]);
+
+  const updateNote = useCallback(
+    (nextNote) => persistSharedState({ ...sharedState, note: nextNote || "" }),
+    [persistSharedState, sharedState],
+  );
+
+  const sendReply = useCallback(
+    (message) =>
+      persistSharedState({
+        ...sharedState,
+        reply: {
+          message,
+          createdAt: new Date().toISOString(),
+        },
+      }),
+    [persistSharedState, sharedState],
+  );
+
+  const updateCountdown = useCallback(
+    (countdown) => persistSharedState({ ...sharedState, countdown }),
+    [persistSharedState, sharedState],
+  );
 
   useEffect(() => {
     if (!isSupabaseSyncConfigured()) return undefined;
@@ -68,6 +101,7 @@ export const useLocalStorage = () => {
         if (!remote.exists) {
           storeMoments([]);
           setMoments([]);
+          setSharedState(saveSharedState(normalizeSharedState()));
           setSyncStatus("synced");
           return;
         }
@@ -76,9 +110,8 @@ export const useLocalStorage = () => {
         storeMoments(remoteMoments);
         setMoments(remoteMoments);
 
-        if (remote.hasPhoto) {
-          savePhoto(remote.photo);
-          setPhoto(remote.photo || "");
+        if (remote.hasSharedState) {
+          setSharedState(saveSharedState(remote.sharedState));
         }
 
         setSyncStatus("synced");
@@ -95,8 +128,13 @@ export const useLocalStorage = () => {
         setMoments(isSupabaseSyncConfigured() ? getStoredMoments() : getMoments());
       }
 
-      if (event.key === PHOTO_STORAGE_KEY) {
-        setPhoto(getPhoto());
+      if (
+        event.key === PHOTO_STORAGE_KEY ||
+        event.key === NOTE_STORAGE_KEY ||
+        event.key === REPLY_STORAGE_KEY ||
+        event.key === COUNTDOWN_STORAGE_KEY
+      ) {
+        setSharedState(getSharedState());
       }
     };
 
@@ -106,10 +144,16 @@ export const useLocalStorage = () => {
 
   return {
     moments,
-    photo,
+    photo: sharedState.photo,
+    note: sharedState.note,
+    reply: sharedState.reply,
+    countdown: sharedState.countdown,
     syncStatus,
     addMoment,
     savePhoto: updatePhoto,
     clearPhoto: removePhoto,
+    saveNote: updateNote,
+    sendReply,
+    saveCountdown: updateCountdown,
   };
 };

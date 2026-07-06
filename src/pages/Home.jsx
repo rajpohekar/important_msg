@@ -1,9 +1,12 @@
 import { CalendarDays, Heart, ShieldCheck, Sparkles } from "lucide-react";
 import { motion, useReducedMotion } from "framer-motion";
 import { lazy, Suspense, useMemo, useState } from "react";
+import CountdownCard from "../components/CountdownCard";
 import CuteQuote from "../components/CuteQuote";
 import FloatingHeartParticles, { createHeartBurst } from "../components/FloatingHeartParticles";
 import MissHerButton from "../components/MissHerButton";
+import PrivateNoteCard from "../components/PrivateNoteCard";
+import ReplyButtonCard from "../components/ReplyButtonCard";
 import StatsCard from "../components/StatsCard";
 import UsPhotoSection from "../components/UsPhotoSection";
 import {
@@ -33,7 +36,21 @@ const toastMessages = [
   "Your heart remembered her again ✨",
 ];
 
-const Home = ({ moments, photo, syncStatus, onAddMoment, onSavePhoto, onClearPhoto, showToast }) => {
+const Home = ({
+  moments,
+  photo,
+  note,
+  reply,
+  countdown,
+  syncStatus,
+  onAddMoment,
+  onSavePhoto,
+  onClearPhoto,
+  onSaveNote,
+  onSendReply,
+  onSaveCountdown,
+  showToast,
+}) => {
   const [particles, setParticles] = useState([]);
   const reduceMotion = useReducedMotion();
 
@@ -127,6 +144,29 @@ const Home = ({ moments, photo, syncStatus, onAddMoment, onSavePhoto, onClearPho
           accent="from-peach-300 to-blush-400"
           delay={0.16}
         />
+      </section>
+
+      <section className="mt-5 grid gap-4 md:mt-6 lg:grid-cols-[1.05fr_0.95fr]">
+        <PrivateNoteCard
+          note={note}
+          syncStatus={syncStatus}
+          onSaveNote={onSaveNote}
+          showToast={showToast}
+        />
+        <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-1">
+          <ReplyButtonCard
+            reply={reply}
+            syncStatus={syncStatus}
+            onSendReply={onSendReply}
+            showToast={showToast}
+          />
+          <CountdownCard
+            countdown={countdown}
+            syncStatus={syncStatus}
+            onSaveCountdown={onSaveCountdown}
+            showToast={showToast}
+          />
+        </div>
       </section>
 
       <div className="mt-5 md:mt-6">

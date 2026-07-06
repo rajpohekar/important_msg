@@ -1,10 +1,11 @@
 import { createClient } from "@supabase/supabase-js";
-import { normalizeMoments } from "./storage";
+import { normalizeMoments, normalizeSharedState } from "./storage";
 
 const SUPABASE_URL = import.meta.env.VITE_SUPABASE_URL;
 const SUPABASE_ANON_KEY = import.meta.env.VITE_SUPABASE_ANON_KEY;
 const coupleId = import.meta.env.VITE_COUPLE_ID || "raj-swamini";
 const TABLE = "little_miss_counter";
+const SHARED_PAYLOAD_TYPE = "little-miss-counter-shared-v1";
 
 let client;
 
@@ -16,12 +17,39 @@ const getClient = () => {
   return client;
 };
 
-const normalizeRow = (row) => ({
-  exists: Boolean(row),
-  moments: normalizeMoments(row?.moments || []),
-  photo: typeof row?.photo === "string" ? row.photo : "",
-  hasPhoto: row ? Object.prototype.hasOwnProperty.call(row, "photo") : false,
-});
+const encodeSharedPayload = (sharedState) =>
+  JSON.stringify({
+    type: SHARED_PAYLOAD_TYPE,
+    ...normalizeSharedState(sharedState),
+  });
+
+const decodeSharedPayload = (payload) => {
+  if (typeof payload !== "string" || !payload) return normalizeSharedState();
+
+  try {
+    const parsed = JSON.parse(payload);
+    if (parsed?.type === SHARED_PAYLOAD_TYPE) return normalizeSharedState(parsed);
+  } catch {
+    return normalizeSharedState({ photo: payload });
+  }
+
+  return normalizeSharedState({ photo: payload });
+};
+
+const normalizeRow = (row) => {
+  const sharedState = decodeSharedPayload(row?.photo);
+
+  return {
+    exists: Boolean(row),
+    moments: normalizeMoments(row?.moments || []),
+    sharedState,
+    photo: sharedState.photo,
+    note: sharedState.note,
+    reply: sharedState.reply,
+    countdown: sharedState.countdown,
+    hasSharedState: row ? Object.prototype.hasOwnProperty.call(row, "photo") : false,
+  };
+};
 
 export const subscribeToSharedState = (onData, onError) => {
   const supabase = getClient();
@@ -56,9 +84,12 @@ export const subscribeToSharedState = (onData, onError) => {
   return () => supabase.removeChannel(channel);
 };
 
-export const replaceSharedState = (moments, photo) => {
+export const replaceSharedState = (moments, sharedState) => {
   const supabase = getClient();
   if (!supabase) return Promise.resolve();
+
+  const normalizedSharedState =
+    typeof sharedState === "string" ? normalizeSharedState({ photo: sharedState }) : normalizeSharedState(sharedState);
 
   return supabase
     .from(TABLE)
@@ -66,7 +97,7 @@ export const replaceSharedState = (moments, photo) => {
       {
         id: coupleId,
         moments: normalizeMoments(moments),
-        photo: photo || "",
+        photo: encodeSharedPayload(normalizedSharedState),
         updated_at: new Date().toISOString(),
       },
       { onConflict: "id" },
@@ -95,7 +126,7 @@ export const replaceMomentsInCloud = (moments) => {
     });
 };
 
-export const savePhotoToCloud = (photo) => {
+export const saveSharedStateToCloud = (sharedState) => {
   const supabase = getClient();
   if (!supabase) return Promise.resolve();
 
@@ -104,7 +135,7 @@ export const savePhotoToCloud = (photo) => {
     .upsert(
       {
         id: coupleId,
-        photo: photo || "",
+        photo: encodeSharedPayload(sharedState),
         updated_at: new Date().toISOString(),
       },
       { onConflict: "id" },
