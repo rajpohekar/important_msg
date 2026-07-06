@@ -11,6 +11,7 @@ import {
   getTodayCount,
   getWeeklyData,
 } from "../utils/statsUtils";
+import { getTodayDateLabel } from "../utils/dateUtils";
 
 const HeroScene = lazy(() => import("../components/HeroScene"));
 
@@ -42,6 +43,7 @@ const Home = ({ moments, photo, syncStatus, onAddMoment, onSavePhoto, onClearPho
       today: getTodayCount(moments),
       week: weeklyData.reduce((sum, item) => sum + item.count, 0),
       month: getMonthlyCount(moments),
+      todayDate: getTodayDateLabel(),
     };
   }, [moments]);
 
@@ -102,7 +104,14 @@ const Home = ({ moments, photo, syncStatus, onAddMoment, onSavePhoto, onClearPho
 
       <section className="mt-8 grid grid-cols-2 gap-3 md:mt-10 md:grid-cols-3 md:gap-4" aria-label="Moment totals">
         <div className="col-span-2 md:col-span-1">
-          <StatsCard icon={Heart} label="Today" count={stats.today} accent="from-blush-500 to-blush-300" delay={0.04} />
+          <StatsCard
+            icon={Heart}
+            label="Today"
+            detail={stats.todayDate}
+            count={stats.today}
+            accent="from-blush-500 to-blush-300"
+            delay={0.04}
+          />
         </div>
         <StatsCard
           icon={CalendarDays}

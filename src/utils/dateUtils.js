@@ -107,15 +107,18 @@ export const getWeekdayLongLabelFromKey = (key) =>
 
 export const getDateLabelFromKey = (key) => dateLabelFormatter.format(keyToNoonUtcDate(key));
 
+export const getTodayDateLabel = () => getDateLabelFromKey(getTodayKey());
+
 export const formatTimelineMoment = (dateValue) => {
   const date = toDate(dateValue);
   const key = getDateKey(date);
   const time = timeFormatter.format(date);
+  const dateLabel = getDateLabelFromKey(key);
 
-  if (key === getTodayKey()) return `Today, ${time}`;
-  if (key === getYesterdayKey()) return `Yesterday, ${time}`;
+  if (key === getTodayKey()) return `Today, ${dateLabel}, ${time}`;
+  if (key === getYesterdayKey()) return `Yesterday, ${dateLabel}, ${time}`;
 
-  return `${getDateLabelFromKey(key)}, ${time}`;
+  return `${dateLabel}, ${time}`;
 };
 
 export const formatTooltipDate = (dateValue) => {
