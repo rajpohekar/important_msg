@@ -17,6 +17,7 @@ import {
 import { getTodayDateLabel } from "../utils/dateUtils";
 
 const HeroScene = lazy(() => import("../components/HeroScene"));
+const MiniiWorld = lazy(() => import("../components/MiniiWorld"));
 
 const HeroSceneFallback = () => (
   <figure className="mx-auto w-full max-w-xl">
@@ -42,6 +43,7 @@ const Home = ({
   note,
   reply,
   countdown,
+  galleryPhotos,
   syncStatus,
   onAddMoment,
   onSavePhoto,
@@ -49,9 +51,12 @@ const Home = ({
   onSaveNote,
   onSendReply,
   onSaveCountdown,
+  onAddGalleryPhotos,
+  onRemoveGalleryPhoto,
   showToast,
 }) => {
   const [particles, setParticles] = useState([]);
+  const [worldOpen, setWorldOpen] = useState(false);
   const reduceMotion = useReducedMotion();
 
   const stats = useMemo(() => {
@@ -106,7 +111,7 @@ const Home = ({
 
       <div className="mt-5 md:mt-8">
         <Suspense fallback={<HeroSceneFallback />}>
-          <HeroScene />
+          <HeroScene onOpenWorld={() => setWorldOpen(true)} />
         </Suspense>
       </div>
 
@@ -189,6 +194,19 @@ const Home = ({
           ? "Your little moments are syncing between both phones. 🔒"
           : "Your little moments stay privately on this device. 🔒"}
       </p>
+
+      <Suspense fallback={null}>
+        <MiniiWorld
+          open={worldOpen}
+          photo={photo}
+          galleryPhotos={galleryPhotos}
+          syncStatus={syncStatus}
+          onClose={() => setWorldOpen(false)}
+          onAddGalleryPhotos={onAddGalleryPhotos}
+          onRemoveGalleryPhoto={onRemoveGalleryPhoto}
+          showToast={showToast}
+        />
+      </Suspense>
     </motion.div>
   );
 };

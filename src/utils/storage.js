@@ -5,11 +5,13 @@ export const PHOTO_STORAGE_KEY = "little-miss-counter-us-photo";
 export const NOTE_STORAGE_KEY = "little-miss-counter-private-note";
 export const REPLY_STORAGE_KEY = "little-miss-counter-her-reply";
 export const COUNTDOWN_STORAGE_KEY = "little-miss-counter-countdown";
+export const GALLERY_STORAGE_KEY = "little-miss-counter-gallery-photos";
 
 const MAX_NOTE_LENGTH = 700;
 const MAX_REPLY_LENGTH = 80;
 const MAX_COUNTDOWN_TITLE_LENGTH = 42;
 const DATE_PATTERN = /^\d{4}-\d{2}-\d{2}$/;
+export const MAX_GALLERY_PHOTOS = 8;
 
 const isMoment = (moment) =>
   moment &&
@@ -20,8 +22,22 @@ const isMoment = (moment) =>
 const sortMoments = (moments) =>
   [...moments].sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
 
+const sortGalleryPhotos = (photos) =>
+  [...photos].sort((a, b) => new Date(a.createdAt) - new Date(b.createdAt));
+
+const isGalleryPhoto = (photo) =>
+  photo &&
+  typeof photo.id === "string" &&
+  typeof photo.src === "string" &&
+  photo.src.startsWith("data:image/") &&
+  typeof photo.createdAt === "string" &&
+  !Number.isNaN(new Date(photo.createdAt).getTime());
+
 export const normalizeMoments = (moments) =>
   Array.isArray(moments) ? sortMoments(moments.filter(isMoment)) : [];
+
+export const normalizeGalleryPhotos = (photos) =>
+  Array.isArray(photos) ? sortGalleryPhotos(photos.filter(isGalleryPhoto)).slice(0, MAX_GALLERY_PHOTOS) : [];
 
 export const normalizeNote = (note) =>
   typeof note === "string" ? note.slice(0, MAX_NOTE_LENGTH) : "";
@@ -58,6 +74,7 @@ export const normalizeSharedState = (sharedState = {}) => ({
   note: normalizeNote(sharedState.note),
   reply: normalizeReply(sharedState.reply),
   countdown: normalizeCountdown(sharedState.countdown),
+  galleryPhotos: normalizeGalleryPhotos(sharedState.galleryPhotos),
 });
 
 export const createMoment = () => ({
@@ -65,6 +82,15 @@ export const createMoment = () => ({
     typeof crypto !== "undefined" && crypto.randomUUID
       ? crypto.randomUUID()
       : `${Date.now()}-${Math.random().toString(16).slice(2)}`,
+  createdAt: new Date().toISOString(),
+});
+
+export const createGalleryPhoto = (src) => ({
+  id:
+    typeof crypto !== "undefined" && crypto.randomUUID
+      ? crypto.randomUUID()
+      : `${Date.now()}-${Math.random().toString(16).slice(2)}`,
+  src,
   createdAt: new Date().toISOString(),
 });
 
@@ -184,12 +210,36 @@ export const saveCountdown = (countdown) => {
   }
 };
 
+export const getGalleryPhotos = () => {
+  if (typeof window === "undefined") return [];
+
+  try {
+    return normalizeGalleryPhotos(JSON.parse(window.localStorage.getItem(GALLERY_STORAGE_KEY) || "[]"));
+  } catch {
+    return [];
+  }
+};
+
+export const saveGalleryPhotos = (photos) => {
+  if (typeof window === "undefined") return [];
+  const normalizedPhotos = normalizeGalleryPhotos(photos);
+
+  if (normalizedPhotos.length) {
+    window.localStorage.setItem(GALLERY_STORAGE_KEY, JSON.stringify(normalizedPhotos));
+  } else {
+    window.localStorage.removeItem(GALLERY_STORAGE_KEY);
+  }
+
+  return normalizedPhotos;
+};
+
 export const getSharedState = () =>
   normalizeSharedState({
     photo: getPhoto(),
     note: getNote(),
     reply: getReply(),
     countdown: getCountdown(),
+    galleryPhotos: getGalleryPhotos(),
   });
 
 export const saveSharedState = (sharedState) => {
@@ -199,6 +249,7 @@ export const saveSharedState = (sharedState) => {
   saveNote(normalizedState.note);
   saveReply(normalizedState.reply);
   saveCountdown(normalizedState.countdown);
+  saveGalleryPhotos(normalizedState.galleryPhotos);
 
   return normalizedState;
 };

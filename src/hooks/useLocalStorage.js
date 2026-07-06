@@ -7,7 +7,9 @@ import {
 } from "../utils/supabaseSync";
 import {
   COUNTDOWN_STORAGE_KEY,
+  createGalleryPhoto,
   createMoment,
+  GALLERY_STORAGE_KEY,
   getMoments,
   getSharedState,
   getStoredMoments,
@@ -91,6 +93,25 @@ export const useLocalStorage = () => {
     [persistSharedState, sharedState],
   );
 
+  const addGalleryPhotos = useCallback(
+    (photoSources) => {
+      const newPhotos = photoSources.map(createGalleryPhoto);
+      const nextGalleryPhotos = [...sharedState.galleryPhotos, ...newPhotos];
+
+      persistSharedState({ ...sharedState, galleryPhotos: nextGalleryPhotos });
+      return newPhotos;
+    },
+    [persistSharedState, sharedState],
+  );
+
+  const removeGalleryPhoto = useCallback(
+    (photoId) => {
+      const nextGalleryPhotos = sharedState.galleryPhotos.filter((photo) => photo.id !== photoId);
+      persistSharedState({ ...sharedState, galleryPhotos: nextGalleryPhotos });
+    },
+    [persistSharedState, sharedState],
+  );
+
   useEffect(() => {
     if (!isSupabaseSyncConfigured()) return undefined;
 
@@ -132,7 +153,8 @@ export const useLocalStorage = () => {
         event.key === PHOTO_STORAGE_KEY ||
         event.key === NOTE_STORAGE_KEY ||
         event.key === REPLY_STORAGE_KEY ||
-        event.key === COUNTDOWN_STORAGE_KEY
+        event.key === COUNTDOWN_STORAGE_KEY ||
+        event.key === GALLERY_STORAGE_KEY
       ) {
         setSharedState(getSharedState());
       }
@@ -148,6 +170,7 @@ export const useLocalStorage = () => {
     note: sharedState.note,
     reply: sharedState.reply,
     countdown: sharedState.countdown,
+    galleryPhotos: sharedState.galleryPhotos,
     syncStatus,
     addMoment,
     savePhoto: updatePhoto,
@@ -155,5 +178,7 @@ export const useLocalStorage = () => {
     saveNote: updateNote,
     sendReply,
     saveCountdown: updateCountdown,
+    addGalleryPhotos,
+    removeGalleryPhoto,
   };
 };

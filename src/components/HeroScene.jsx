@@ -86,7 +86,7 @@ const SceneContents = ({ mobile, reducedMotion, parallax }) => (
   </>
 );
 
-const HeroScene = () => {
+const HeroScene = ({ onOpenWorld }) => {
   const reduceMotion = useReducedMotion();
   const containerRef = useRef(null);
   const settings = useSceneSettings();
@@ -95,11 +95,14 @@ const HeroScene = () => {
 
   return (
     <figure ref={containerRef} className="mx-auto w-full max-w-xl">
-      <motion.div
+      <motion.button
+        type="button"
+        onClick={onOpenWorld}
+        aria-label="Open Minii World"
         initial={reduceMotion ? false : { opacity: 0, y: 18 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.6, ease: [0.22, 1, 0.36, 1] }}
-        className="hero-scene-shell h-[220px] overflow-hidden rounded-lg border border-white/75 bg-white/44 shadow-glass backdrop-blur-2xl xs:h-[238px] md:h-[300px] lg:h-[320px]"
+        className="hero-scene-shell block h-[220px] w-full overflow-hidden rounded-lg border border-white/75 bg-white/44 text-left shadow-glass outline-none backdrop-blur-2xl transition focus-visible:ring-4 focus-visible:ring-blush-300/70 xs:h-[238px] md:h-[300px] lg:h-[320px]"
       >
         {showFallback ? (
           <HeartFallback />
@@ -125,7 +128,7 @@ const HeroScene = () => {
             </Suspense>
           </Canvas>
         )}
-      </motion.div>
+      </motion.button>
       <figcaption className="mt-3 text-center text-sm font-bold text-cocoa-600/80">
         Every small thought counts. 💗
       </figcaption>

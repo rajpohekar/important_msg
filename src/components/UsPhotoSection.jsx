@@ -1,39 +1,11 @@
 import { Camera, Heart, ImagePlus, Sparkles, X } from "lucide-react";
 import { motion, useReducedMotion } from "framer-motion";
 import { useRef, useState } from "react";
+import { resizeImageFile } from "../utils/imageUtils";
 
 const MAX_IMAGE_SIZE = 900;
 const IMAGE_QUALITY = 0.72;
 const MAX_SYNCED_PHOTO_SIZE = 850000;
-
-const resizeImage = (file) =>
-  new Promise((resolve, reject) => {
-    const reader = new FileReader();
-
-    reader.onload = () => {
-      const image = new Image();
-
-      image.onload = () => {
-        const scale = Math.min(1, MAX_IMAGE_SIZE / Math.max(image.width, image.height));
-        const width = Math.round(image.width * scale);
-        const height = Math.round(image.height * scale);
-        const canvas = document.createElement("canvas");
-        const context = canvas.getContext("2d");
-
-        canvas.width = width;
-        canvas.height = height;
-        context.drawImage(image, 0, 0, width, height);
-
-        resolve(canvas.toDataURL("image/jpeg", IMAGE_QUALITY));
-      };
-
-      image.onerror = () => reject(new Error("Unable to read this image."));
-      image.src = reader.result;
-    };
-
-    reader.onerror = () => reject(new Error("Unable to load this image."));
-    reader.readAsDataURL(file);
-  });
 
 const UsPhotoSection = ({ photo, syncStatus, onSavePhoto, onClearPhoto, showToast }) => {
   const [isLoading, setIsLoading] = useState(false);
@@ -54,7 +26,10 @@ const UsPhotoSection = ({ photo, syncStatus, onSavePhoto, onClearPhoto, showToas
     setIsLoading(true);
 
     try {
-      const imageData = await resizeImage(file);
+      const imageData = await resizeImageFile(file, {
+        maxSize: MAX_IMAGE_SIZE,
+        quality: IMAGE_QUALITY,
+      });
 
       if (imageData.length > MAX_SYNCED_PHOTO_SIZE) {
         showToast("Try a smaller photo so it can sync gently.");

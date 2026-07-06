@@ -30,6 +30,7 @@ const App = () => {
     note,
     reply,
     countdown,
+    galleryPhotos,
     syncStatus,
     addMoment,
     savePhoto,
@@ -37,6 +38,8 @@ const App = () => {
     saveNote,
     sendReply,
     saveCountdown,
+    addGalleryPhotos,
+    removeGalleryPhoto,
   } = useLocalStorage();
 
   useEffect(() => {
@@ -97,6 +100,7 @@ const App = () => {
                       note={note}
                       reply={reply}
                       countdown={countdown}
+                      galleryPhotos={galleryPhotos}
                       syncStatus={syncStatus}
                       onAddMoment={addMoment}
                       onSavePhoto={savePhoto}
@@ -104,6 +108,8 @@ const App = () => {
                       onSaveNote={saveNote}
                       onSendReply={sendReply}
                       onSaveCountdown={saveCountdown}
+                      onAddGalleryPhotos={addGalleryPhotos}
+                      onRemoveGalleryPhoto={removeGalleryPhoto}
                       showToast={showToast}
                     />
                   ) : (
