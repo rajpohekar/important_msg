@@ -7,10 +7,11 @@ const datePartsFormatter = new Intl.DateTimeFormat("en-US", {
   day: "2-digit",
 });
 
-const timeFormatter = new Intl.DateTimeFormat("en-US", {
+const exactTimeFormatter = new Intl.DateTimeFormat("en-US", {
   timeZone: APP_TIME_ZONE,
   hour: "numeric",
   minute: "2-digit",
+  second: "2-digit",
   hour12: true,
 });
 
@@ -109,10 +110,10 @@ export const getDateLabelFromKey = (key) => dateLabelFormatter.format(keyToNoonU
 
 export const getTodayDateLabel = () => getDateLabelFromKey(getTodayKey());
 
-export const formatTimelineMoment = (dateValue) => {
+export const formatExactMoment = (dateValue) => {
   const date = toDate(dateValue);
   const key = getDateKey(date);
-  const time = timeFormatter.format(date);
+  const time = exactTimeFormatter.format(date);
   const dateLabel = tooltipDateFormatter.format(keyToNoonUtcDate(key));
 
   return `${dateLabel}, ${time}`;

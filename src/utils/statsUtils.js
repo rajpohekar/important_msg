@@ -77,7 +77,3 @@ export const getMostThoughtfulDay = (moments) => {
   };
 };
 
-export const getRecentMoments = (moments, limit = 10) =>
-  [...moments]
-    .sort((a, b) => parse(b) - parse(a))
-    .slice(0, limit);

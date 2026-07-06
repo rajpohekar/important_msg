@@ -24,7 +24,7 @@ const App = () => {
   const [loading, setLoading] = useState(true);
   const [toasts, setToasts] = useState([]);
   const cursorGlow = useRef(null);
-  const { moments, photo, syncStatus, addMoment, clearMoments, savePhoto, clearPhoto } = useLocalStorage();
+  const { moments, photo, syncStatus, addMoment, savePhoto, clearPhoto } = useLocalStorage();
 
   useEffect(() => {
     const timer = window.setTimeout(() => setLoading(false), 360);
@@ -91,8 +91,6 @@ const App = () => {
                     <Insights
                       key="insights"
                       moments={moments}
-                      onClearMoments={clearMoments}
-                      showToast={showToast}
                     />
                   )}
                 </AnimatePresence>

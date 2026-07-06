@@ -6,7 +6,6 @@ import {
   subscribeToSharedState,
 } from "../utils/supabaseSync";
 import {
-  clearMoments,
   createMoment,
   getMoments,
   getPhoto,
@@ -43,17 +42,6 @@ export const useLocalStorage = () => {
 
     return moment;
   }, [moments]);
-
-  const removeAllMoments = useCallback(() => {
-    clearMoments();
-    setMoments([]);
-
-    if (isSupabaseSyncConfigured()) {
-      replaceMomentsInCloud([])
-        .then(() => setSyncStatus("synced"))
-        .catch(() => setSyncStatus("offline"));
-    }
-  }, []);
 
   const updatePhoto = useCallback((nextPhoto) => {
     savePhoto(nextPhoto);
@@ -121,7 +109,6 @@ export const useLocalStorage = () => {
     photo,
     syncStatus,
     addMoment,
-    clearMoments: removeAllMoments,
     savePhoto: updatePhoto,
     clearPhoto: removePhoto,
   };

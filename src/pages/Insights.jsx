@@ -1,8 +1,7 @@
 import { AnimatePresence, motion, useReducedMotion } from "framer-motion";
-import { Heart, Sparkles, Trash2 } from "lucide-react";
-import { useMemo, useState } from "react";
+import { Heart, Sparkles } from "lucide-react";
+import { useMemo } from "react";
 import AnimatedCounter from "../components/AnimatedCounter";
-import ConfirmModal from "../components/ConfirmModal";
 import GlassCard from "../components/GlassCard";
 import MonthlyLineChart from "../components/MonthlyLineChart";
 import MostThoughtfulDay from "../components/MostThoughtfulDay";
@@ -12,12 +11,10 @@ import {
   getMonthlyCount,
   getMonthlyData,
   getMostThoughtfulDay,
-  getRecentMoments,
   getWeeklyData,
 } from "../utils/statsUtils";
 
-const Insights = ({ moments, onClearMoments, showToast }) => {
-  const [confirmOpen, setConfirmOpen] = useState(false);
+const Insights = ({ moments }) => {
   const reduceMotion = useReducedMotion();
 
   const stats = useMemo(
@@ -26,16 +23,9 @@ const Insights = ({ moments, onClearMoments, showToast }) => {
       weeklyData: getWeeklyData(moments),
       monthlyData: getMonthlyData(moments),
       thoughtfulDay: getMostThoughtfulDay(moments),
-      recentMoments: getRecentMoments(moments),
     }),
     [moments],
   );
-
-  const handleClear = () => {
-    onClearMoments();
-    setConfirmOpen(false);
-    showToast("Your little moments have been cleared.");
-  };
 
   return (
     <motion.div
@@ -104,21 +94,8 @@ const Insights = ({ moments, onClearMoments, showToast }) => {
       </section>
 
       <section className="mt-5 md:mt-6">
-        <RecentMoments moments={stats.recentMoments} />
+        <RecentMoments moments={moments} />
       </section>
-
-      <section className="mt-7 flex justify-center md:mt-9">
-        <button
-          type="button"
-          onClick={() => setConfirmOpen(true)}
-          className="inline-flex min-h-12 items-center justify-center gap-2 rounded-full border border-blush-300/70 bg-white/44 px-5 text-sm font-black text-cocoa-600 shadow-soft backdrop-blur-xl transition hover:-translate-y-0.5 hover:text-blush-600 focus:outline-none focus-visible:ring-2 focus-visible:ring-blush-400"
-        >
-          <Trash2 size={17} aria-hidden="true" />
-          Clear All Moments
-        </button>
-      </section>
-
-      <ConfirmModal open={confirmOpen} onCancel={() => setConfirmOpen(false)} onConfirm={handleClear} />
     </motion.div>
   );
 };

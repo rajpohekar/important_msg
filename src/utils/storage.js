@@ -67,11 +67,6 @@ export const saveMoment = () => {
   return moment;
 };
 
-export const clearMoments = () => {
-  if (typeof window === "undefined") return;
-  window.localStorage.setItem(STORAGE_KEY, JSON.stringify([]));
-};
-
 export const getPhoto = () => {
   if (typeof window === "undefined") return "";
   return window.localStorage.getItem(PHOTO_STORAGE_KEY) || "";
