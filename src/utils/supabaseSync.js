@@ -56,8 +56,6 @@ export const subscribeToSharedState = (onData, onError) => {
   return () => supabase.removeChannel(channel);
 };
 
-export const seedSharedState = (moments, photo) => replaceSharedState(moments, photo);
-
 export const replaceSharedState = (moments, photo) => {
   const supabase = getClient();
   if (!supabase) return Promise.resolve();

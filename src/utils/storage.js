@@ -28,6 +28,19 @@ export const storeMoments = (moments) => {
   window.localStorage.setItem(STORAGE_KEY, JSON.stringify(normalizeMoments(moments)));
 };
 
+export const getStoredMoments = () => {
+  if (typeof window === "undefined") return [];
+
+  const existing = window.localStorage.getItem(STORAGE_KEY);
+  if (existing === null) return [];
+
+  try {
+    return normalizeMoments(JSON.parse(existing));
+  } catch {
+    return [];
+  }
+};
+
 export const getMoments = () => {
   if (typeof window === "undefined") return [];
 

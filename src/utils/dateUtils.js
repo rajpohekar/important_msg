@@ -113,10 +113,7 @@ export const formatTimelineMoment = (dateValue) => {
   const date = toDate(dateValue);
   const key = getDateKey(date);
   const time = timeFormatter.format(date);
-  const dateLabel = getDateLabelFromKey(key);
-
-  if (key === getTodayKey()) return `Today, ${dateLabel}, ${time}`;
-  if (key === getYesterdayKey()) return `Yesterday, ${dateLabel}, ${time}`;
+  const dateLabel = tooltipDateFormatter.format(keyToNoonUtcDate(key));
 
   return `${dateLabel}, ${time}`;
 };

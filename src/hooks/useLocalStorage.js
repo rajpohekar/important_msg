@@ -1,9 +1,8 @@
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import {
   isSupabaseSyncConfigured,
   replaceMomentsInCloud,
   savePhotoToCloud,
-  seedSharedState,
   subscribeToSharedState,
 } from "../utils/supabaseSync";
 import {
@@ -11,6 +10,7 @@ import {
   createMoment,
   getMoments,
   getPhoto,
+  getStoredMoments,
   normalizeMoments,
   PHOTO_STORAGE_KEY,
   savePhoto,
@@ -19,16 +19,18 @@ import {
 } from "../utils/storage";
 
 export const useLocalStorage = () => {
-  const [moments, setMoments] = useState(() => getMoments());
+  const [moments, setMoments] = useState(() =>
+    isSupabaseSyncConfigured() ? getStoredMoments() : getMoments(),
+  );
   const [photo, setPhoto] = useState(() => getPhoto());
   const [syncStatus, setSyncStatus] = useState(() =>
     isSupabaseSyncConfigured() ? "connecting" : "local",
   );
-  const initialSeedAttempted = useRef(false);
 
   const addMoment = useCallback(() => {
     const moment = createMoment();
-    const nextMoments = normalizeMoments([moment, ...getMoments()]);
+    const currentMoments = isSupabaseSyncConfigured() ? moments : getMoments();
+    const nextMoments = normalizeMoments([moment, ...currentMoments]);
 
     storeMoments(nextMoments);
     setMoments(nextMoments);
@@ -40,7 +42,7 @@ export const useLocalStorage = () => {
     }
 
     return moment;
-  }, []);
+  }, [moments]);
 
   const removeAllMoments = useCallback(() => {
     clearMoments();
@@ -75,11 +77,10 @@ export const useLocalStorage = () => {
 
     const unsubscribe = subscribeToSharedState(
       (remote) => {
-        if (!remote.exists && !initialSeedAttempted.current) {
-          initialSeedAttempted.current = true;
-          seedSharedState(getMoments(), getPhoto())
-            .then(() => setSyncStatus("synced"))
-            .catch(() => setSyncStatus("offline"));
+        if (!remote.exists) {
+          storeMoments([]);
+          setMoments([]);
+          setSyncStatus("synced");
           return;
         }
 
@@ -103,7 +104,7 @@ export const useLocalStorage = () => {
   useEffect(() => {
     const handleStorage = (event) => {
       if (event.key === STORAGE_KEY) {
-        setMoments(getMoments());
+        setMoments(isSupabaseSyncConfigured() ? getStoredMoments() : getMoments());
       }
 
       if (event.key === PHOTO_STORAGE_KEY) {
