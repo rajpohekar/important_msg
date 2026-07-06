@@ -1,49 +1,51 @@
 import {
-  addDays,
-  eachDayOfInterval,
-  endOfMonth,
-  format,
-  isSameDay,
-  isSameMonth,
-  isThisMonth,
-  isToday,
-  startOfMonth,
-  startOfWeek,
-} from "date-fns";
+  getCurrentMonthKeys,
+  getCurrentMonthPrefix,
+  getCurrentWeekKeys,
+  getDateKey,
+  getDateLabelFromKey,
+  getTodayKey,
+  getWeekdayLongLabelFromKey,
+  getWeekdayShortLabelFromKey,
+} from "./dateUtils";
 
 const parse = (moment) => new Date(moment.createdAt);
 
-export const getTodayCount = (moments) => moments.filter((moment) => isToday(parse(moment))).length;
+const countByDateKey = (moments) =>
+  moments.reduce((acc, moment) => {
+    const key = getDateKey(moment.createdAt);
+    acc[key] = (acc[key] || 0) + 1;
+    return acc;
+  }, {});
 
-export const getMonthlyCount = (moments) =>
-  moments.filter((moment) => isThisMonth(parse(moment))).length;
+export const getTodayCount = (moments) => {
+  const todayKey = getTodayKey();
+  return moments.filter((moment) => getDateKey(moment.createdAt) === todayKey).length;
+};
+
+export const getMonthlyCount = (moments) => {
+  const currentMonth = getCurrentMonthPrefix();
+  return moments.filter((moment) => getDateKey(moment.createdAt).startsWith(currentMonth)).length;
+};
 
 export const getWeeklyData = (moments) => {
-  const weekStart = startOfWeek(new Date(), { weekStartsOn: 1 });
+  const counts = countByDateKey(moments);
 
-  return Array.from({ length: 7 }, (_, index) => {
-    const day = addDays(weekStart, index);
-
-    return {
-      day: format(day, "EEE"),
-      date: day.toISOString(),
-      count: moments.filter((moment) => isSameDay(parse(moment), day)).length,
-    };
-  });
+  return getCurrentWeekKeys().map((key) => ({
+    day: getWeekdayShortLabelFromKey(key),
+    date: key,
+    count: counts[key] || 0,
+  }));
 };
 
 export const getMonthlyData = (moments) => {
-  const today = new Date();
-  const monthStart = startOfMonth(today);
-  const monthEnd = endOfMonth(today);
+  const counts = countByDateKey(moments);
 
-  return eachDayOfInterval({ start: monthStart, end: monthEnd }).map((day) => ({
-    day: format(day, "d"),
-    label: format(day, "MMM d"),
-    date: day.toISOString(),
-    count: moments.filter(
-      (moment) => isSameMonth(parse(moment), today) && isSameDay(parse(moment), day),
-    ).length,
+  return getCurrentMonthKeys().map((key) => ({
+    day: String(Number(key.slice(8))),
+    label: getDateLabelFromKey(key),
+    date: key,
+    count: counts[key] || 0,
   }));
 };
 
@@ -51,25 +53,27 @@ export const getMostThoughtfulDay = (moments) => {
   if (!moments.length) return null;
 
   const grouped = moments.reduce((acc, moment) => {
+    const key = getDateKey(moment.createdAt);
     const date = parse(moment);
-    const key = format(date, "yyyy-MM-dd");
+
     acc[key] = {
       count: (acc[key]?.count ?? 0) + 1,
-      date,
+      latestDate: acc[key]?.latestDate > date ? acc[key].latestDate : date,
     };
+
     return acc;
   }, {});
 
   const [key, value] = Object.entries(grouped).sort((a, b) => {
     if (b[1].count !== a[1].count) return b[1].count - a[1].count;
-    return b[1].date - a[1].date;
+    return b[1].latestDate - a[1].latestDate;
   })[0];
 
   return {
     key,
     count: value.count,
-    dayName: format(value.date, "EEEE"),
-    dateLabel: format(value.date, "d MMM"),
+    dayName: getWeekdayLongLabelFromKey(key),
+    dateLabel: getDateLabelFromKey(key),
   };
 };
 
